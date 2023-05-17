@@ -1,1 +1,1 @@
-./CGModel.exe < namesfile1j5n.dat
+./CGeNArate.exe < namesfile1j5n.dat
