@@ -1,1 +1,1 @@
-./CGModelCircular.exe < namesfileCircular31.dat
+./CGeNArateCircular.exe < namesfileCircular31.dat
