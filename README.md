@@ -8,3 +8,5 @@ The programs provided are the following:
 
 - GLIMPS/Rebuild_nmer.py: To rebuild a simulated Coarse-Grained DNA. The input and output files have
 to be edited in the first few lines of the python script.
+
+- fdhelix/fdhelix.c: Contains a simplified version of the original code by David A. Case. fdhelix/MitochondriafromLine.py is a script to convert linear DNA into circular DNA with a specified supercoiling.
