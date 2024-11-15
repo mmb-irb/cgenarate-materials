@@ -739,10 +739,9 @@ for( chain = 1; chain <= 2; chain++ ) {
             x = xrad * cos(yyr);
             y = xrad * sin(yyr);
             z = hxmul * h[j].zz + current_height;
-            //modifications for longer sequences
             fprintf(stdout, 
-  "ATOM  %5d  %-3s %3s%6d    %8.2f%8.2f%8.2f  1.00  0.00           %c  \n",
-               1, h[j].atom, resout, i, x, y, z, h[j].atom[0] );
+  "ATOM  %5d  %-3s %3s%6d    %8.3f%8.3f%8.3f  1.00  0.00           %c  \n",
+               count, h[j].atom, resout, i, x, y, z, h[j].atom[0] );
         }
 
         // Increase unit twist and height

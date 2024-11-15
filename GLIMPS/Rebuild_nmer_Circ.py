@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[3]:
 
 
-names = ["2lef", "AGCG", "AGCT", "CGTG", "1zgw", "1j5n", "56merL", "CTAG_flex"]
-i = 6
+names = ["Circular30_1"]
+i = 0
 i, names[i]
 
 
-# In[2]:
+# In[ ]:
 
 
 referencetop = 'input/' + names[i] + 'AA.pdb'
@@ -18,20 +18,20 @@ outputtop = 'output/' + names[i] + 'predicted.pdb'
 outputtraj = 'output/' + names[i] + 'predicted.mdcrd'
 
 
-# In[3]:
+# In[5]:
 
 
 import dnatraj as dnat
 from dnatraj import duplex as dx
 
 
-# In[4]:
+# In[6]:
 
 
 import pickle
 
 
-# In[5]:
+# In[7]:
 
 
 import mdtraj as mdt
@@ -40,7 +40,7 @@ import numpy as np
 
 
 
-# In[6]:
+# In[8]:
 
 
 # bp=40
@@ -59,7 +59,7 @@ backbone_nmers=10
 
 # # Rebuild full oligo
 
-# In[7]:
+# In[9]:
 
 
 with open("transformer_backbone.pickle", "rb") as input_file:
@@ -76,7 +76,7 @@ with open("transformerC.pickle", "rb") as input_file:
 mypdb = mdt.load(referencetop)
 
 
-# In[9]:
+# In[11]:
 
 
 sel = mypdb.topology.select('not type H')
@@ -85,14 +85,14 @@ mynoHpdb = mypdb.atom_slice(sel)
 mynoHpdb.save(outputtop)
 
 
-# In[10]:
+# In[13]:
 
 
 sel = mypdb.topology.select('name =~ "C1."')
 myc1pdb = mypdb.atom_slice(sel)
 
 
-# In[11]:
+# In[14]:
 
 
 cg_test_backbone = mdt.load(inputtraj, top=myc1pdb.top)[::10]
@@ -100,45 +100,48 @@ dx_test_backbone = dx.ComplementaryDuplex(cg_test_backbone)
 lendx=len(dx_test_backbone)
 
 
-# In[12]:
+# In[15]:
 
 
 cg_test_backbone
 
 
-# In[13]:
+# In[16]:
 
 
 dx_test_backbone.sequence#,dx_test_backbone.sequence==Sequences[simnum-1]
 
 
-# In[14]:
+# In[17]:
 
 
 # cg_test_backbone.save("AtomAAAA_skip.mdcrd")
 
 
-# In[15]:
+# In[18]:
 
 
-#Topology with extra phosphates for full reconstruction
-auxtop=mynoHpdb.top.copy()
+# #Topology with extra phosphates for full reconstruction
+# auxtop=mynoHpdb.top.copy()
 
-for name in ("OP2", "OP1", "P"):
-    auxtop.insert_atom(name=name,
-                       element=next(auxtop.atoms_by_name(name)).element,
-                       residue=auxtop._residues[0],
-                       index=0,
-                       rindex=0)
+# for name in ("OP2", "OP1", "P"):
+#     auxtop.insert_atom(name=name,
+#                        element=next(auxtop.atoms_by_name(name)).element,
+#                        residue=auxtop._residues[0],
+#                        index=0,
+#                        rindex=0)
     
-for name in ("OP2", "OP1", "P"):
-    auxtop.insert_atom(name=name,
-                       element=next(auxtop.atoms_by_name(name)).element,
-                       residue=auxtop._residues[lendx],
-                       index=auxtop._residues[lendx]._atoms[0].index,
-                       rindex=0) 
+# for name in ("OP2", "OP1", "P"):
+#     auxtop.insert_atom(name=name,
+#                        element=next(auxtop.atoms_by_name(name)).element,
+#                        residue=auxtop._residues[lendx],
+#                        index=auxtop._residues[lendx]._atoms[0].index,
+#                        rindex=0) 
 
-auxpdb=mdt.Trajectory(np.zeros((1,auxtop._numAtoms,3)),auxtop)
+# auxpdb=mdt.Trajectory(np.zeros((1,auxtop._numAtoms,3)),auxtop)
+
+auxtop=mynoHpdb.top
+auxpdb=mynoHpdb
 
 
 # ## Rebuild backbone
@@ -192,7 +195,7 @@ dx_pred_backbone = dx.sstack(dx_nmer_pred_backbone[:-1] +
 fg_predtest_backbone = dx_pred_backbone.traj
 
 
-# In[18]:
+# In[21]:
 
 
 # fg_predtest_backbone.save_pdb('test_backbone.pdb')
@@ -257,7 +260,7 @@ for i, index in enumerate(Aindexes_test_backbone):
     # print(index)
 
 
-# In[21]:
+# In[24]:
 
 
 # def mdtstack (trajectories, keep_resSeq=True):
@@ -275,7 +278,7 @@ for i, index in enumerate(Aindexes_test_backbone):
 #     return finaltraj
 
 
-# In[22]:
+# In[25]:
 
 
 # mdtstack(fg_predtest_Afrombackbone, keep_resSeq=True).save_pdb('predtest_Afrombackbone.pdb')
@@ -337,7 +340,7 @@ for i, index in enumerate(Cindexes_test_backbone):
     # print(index)
 
 
-# In[25]:
+# In[28]:
 
 
 # def mdtstack (trajectories, keep_resSeq=True):
@@ -355,7 +358,7 @@ for i, index in enumerate(Cindexes_test_backbone):
 #     return finaltraj
 
 
-# In[26]:
+# In[29]:
 
 
 # mdtstack(fg_predtest_Cfrombackbone, keep_resSeq=True).save_pdb('predtest_Cfrombackbone.pdb')
@@ -363,7 +366,7 @@ for i, index in enumerate(Cindexes_test_backbone):
 
 # ## Rejoin A and C predictions in backbone
 
-# In[ ]:
+# In[30]:
 
 
 tostack=[]
@@ -385,24 +388,26 @@ for i in range(lendx):
         print("Error",i)
 
 
-# In[28]:
+# In[31]:
 
 
 fg_predtest_0 = dx.sstack(tostack) 
 
 
-# In[29]:
+# In[32]:
 
 
 # fg_predtest_0.traj.save_pdb('test_predicted0.pdb')
 
 
-# In[30]:
+# In[33]:
 
 
-sel = fg_predtest_0.traj.topology.select(
-    'not ((resid 0 %d) and (name =~ ".*P.*"))' % (lendx))
-fg_predtest = fg_predtest_0.traj.atom_slice(sel)
+# sel = fg_predtest_0.traj.topology.select(
+#     'not ((resid 0 %d) and (name =~ ".*P.*"))' % (lendx))
+# fg_predtest = fg_predtest_0.traj.atom_slice(sel)
+
+fg_predtest = fg_predtest_0.traj
 
 
 # In[ ]:
@@ -414,20 +419,20 @@ print("Backmapping complete")
 
 # ## Final prediction evaluation
 
-# In[35]:
+# In[39]:
 
 
 # from mdtraj.geometry.alignment import rmsd_qcp
 
 
-# In[36]:
+# In[40]:
 
 
 # sel = fg_predtest.topology.select('name =~ "C1."')
 # cg_predtest = fg_predtest.atom_slice(sel)
 
 
-# In[ ]:
+# In[41]:
 
 
 # 
@@ -436,7 +441,7 @@ print("Backmapping complete")
 #     rmsd_cg_test[i]=rmsd_qcp(cg_test_backbone.xyz[i],cg_predtest.xyz[i])
 
 
-# In[38]:
+# In[42]:
 
 
 # rmsd_cg_test.mean()*10 #nm -> 10A

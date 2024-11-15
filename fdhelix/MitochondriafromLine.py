@@ -4,8 +4,8 @@
 # In[1]:
 
 
-inputfile = 'input/line_mitochondria.pdb'
-outputfile = 'input/mitochondriaCG3.pdb'
+inputfile = 'ATAT.pdb'
+outputfile = 'ATAT2.pdb'
 
 
 # In[2]:
@@ -154,6 +154,7 @@ r,theta
 
 
 y2, z2 = r*np.cos(theta), r*np.sin(theta)
+y2, z2 = y2+zdist/(2*np.pi), z2+zdist/(2*np.pi)
 y2, z2
 
 
