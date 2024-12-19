@@ -4,7 +4,7 @@
 # In[3]:
 
 
-names = ["Circular30_1"]
+names = ["Circular30_1","1j5n"]
 i = 0
 i, names[i]
 
@@ -17,7 +17,7 @@ inputtraj = 'input/' + names[i] + 'aligned.mdcrd'
 outputtop = 'output/' + names[i] + 'predicted.pdb'
 outputtraj = 'output/' + names[i] + 'predicted.mdcrd'
 
-
+print(names[i])
 # In[5]:
 
 
@@ -82,7 +82,7 @@ mypdb = mdt.load(referencetop)
 sel = mypdb.topology.select('not type H')
 mynoHpdb = mypdb.atom_slice(sel)
 
-mynoHpdb.save(outputtop)
+#mynoHpdb.save(outputtop)
 
 
 # In[13]:
@@ -122,26 +122,32 @@ dx_test_backbone.sequence#,dx_test_backbone.sequence==Sequences[simnum-1]
 
 
 # #Topology with extra phosphates for full reconstruction
-# auxtop=mynoHpdb.top.copy()
+print(mynoHpdb.top._atoms[0].name, mynoHpdb.top._atoms[0].name in ("OP2", "OP1", "P"))
 
-# for name in ("OP2", "OP1", "P"):
-#     auxtop.insert_atom(name=name,
-#                        element=next(auxtop.atoms_by_name(name)).element,
-#                        residue=auxtop._residues[0],
-#                        index=0,
-#                        rindex=0)
-    
-# for name in ("OP2", "OP1", "P"):
-#     auxtop.insert_atom(name=name,
-#                        element=next(auxtop.atoms_by_name(name)).element,
-#                        residue=auxtop._residues[lendx],
-#                        index=auxtop._residues[lendx]._atoms[0].index,
-#                        rindex=0) 
+no_phosphates = mynoHpdb.top._atoms[0].name not in ("OP2", "OP1", "P")
 
-# auxpdb=mdt.Trajectory(np.zeros((1,auxtop._numAtoms,3)),auxtop)
+if no_phosphates:
+    auxtop=mynoHpdb.top.copy()
 
-auxtop=mynoHpdb.top
-auxpdb=mynoHpdb
+    for name in ("OP2", "OP1", "P"):
+        auxtop.insert_atom(name=name,
+                            element=next(auxtop.atoms_by_name(name)).element,
+                            residue=auxtop._residues[0],
+                            index=0,
+                            rindex=0)
+        
+    for name in ("OP2", "OP1", "P"):
+        auxtop.insert_atom(name=name,
+                            element=next(auxtop.atoms_by_name(name)).element,
+                            residue=auxtop._residues[lendx],
+                            index=auxtop._residues[lendx]._atoms[0].index,
+                            rindex=0) 
+
+    auxpdb=mdt.Trajectory(np.zeros((1,auxtop._numAtoms,3)),auxtop)
+
+else:
+    auxtop=mynoHpdb.top
+    auxpdb=mynoHpdb
 
 
 # ## Rebuild backbone
@@ -412,6 +418,8 @@ fg_predtest = fg_predtest_0.traj
 
 # In[ ]:
 
+auxpdb=mdt.Trajectory(fg_predtest[-1].xyz,auxtop)
+auxpdb.save(outputtop)
 
 fg_predtest.save(outputtraj)
 

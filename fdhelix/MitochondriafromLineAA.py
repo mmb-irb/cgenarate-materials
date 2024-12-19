@@ -4,15 +4,15 @@
 # In[1]:
 
 
-inputfile = 'ATAT_CG.pdb'
-outputfile = 'ATAT_CG2.pdb'
+inputfile = 'ATAT_AA.pdb'
+outputfile = 'ATAT_AA2.pdb'
 
 
 # In[2]:
 
 
 canonical_turns=None
-delta_link=0
+delta_link=-1
 target_turns=None
 
 
@@ -44,26 +44,21 @@ def angles(a, b, c):
     return angle*sign
 
 
-# In[5]:
-
+# Precomputing angle scaling
 
 xlist=[]
-with open(inputfile, 'r')  as fin:
-    for index, line in enumerate(fin):
-        xlist.append(float(line[46-16:54-16]))
-        
 ylist=[]
-with open(inputfile, 'r')  as fin:
-    for index, line in enumerate(fin):
-        ylist.append(float(line[46-8:54-8]))
-        
 zlist=[]
+
 with open(inputfile, 'r')  as fin:
     for index, line in enumerate(fin):
-        zlist.append(float(line[46:55]))
+        if "C1'" in line:
+            xlist.append(float(line[46-16:54-16]))
+            ylist.append(float(line[46-8:54-8]))
+            zlist.append(float(line[46:55]))
+print(len(xlist))
 
-
-# In[6]:
+# In:
 
 
 zdist=max(zlist)-min(zlist)
@@ -76,8 +71,7 @@ n=len(x)
 bp=n//2
 
 
-# In[7]:
-
+# In:
 
 if not canonical_turns:
     canonical_turns=round(bp/10.4)
@@ -85,8 +79,7 @@ if not target_turns:
     target_turns=canonical_turns+delta_link
 
 
-# In[8]:
-
+# In:
 
 origin=originx,originy=0,0
 
@@ -111,15 +104,63 @@ pointsori=points[:1]*0+origin
 connectangle=angles(pointsini,pointsori,pointsfin)[0]
 
 
-# In[9]:
-
-
 turns=(np.sum(allangles[:]))/(2*np.pi)
 turnsconnecting=turns+connectangle/(2*np.pi)
 
 angleproportion=target_turns/turnsconnecting
 
-turns, turnsconnecting
+print(turns, turnsconnecting, angleproportion)
+
+
+
+# In[5]:
+
+
+xlist=[]
+ylist=[]
+zlist=[]
+
+with open(inputfile, 'r')  as fin:
+    for index, line in enumerate(fin):
+        if "ATOM" in line:
+            xlist.append(float(line[46-16:54-16]))
+            ylist.append(float(line[46-8:54-8]))
+            zlist.append(float(line[46:55]))
+        else:
+            print(line)
+print(len(xlist))
+
+# In[6]:
+
+
+zdist=max(zlist)-min(zlist)
+
+x=np.array(xlist)
+y=np.array(ylist)
+z=np.array(zlist)
+
+n=len(x)
+bp=n//2
+
+
+# In[8]:
+
+
+origin=originx,originy=0,0
+
+points=np.array((x,y)).T
+
+pointsini=np.array((1,0))
+pointsfin=points[[0,-1]]
+pointsori=points[[0,-1]]*0+origin
+
+angle_0,angle_last=angles(pointsini,pointsori,pointsfin)
+
+pointsini=points[:-2]
+pointsfin=points[1:-1]
+pointsori=points[:-2]*0+origin
+
+allangles=angles(pointsini,pointsori,pointsfin)
 
 
 # In[10]:
@@ -127,13 +168,14 @@ turns, turnsconnecting
 
 alldists = np.sqrt(x**2 + y**2)
 
-newangles = allangles.cumsum() * angleproportion 
-newangles = np.concatenate((newangles + angle_0, newangles[::-1]+angle_last))
+newangles = allangles.cumsum() * angleproportion + angle_0
+#newangles = np.concatenate((newangles + angle_0, newangles[::-1]+angle_last))
 
 newx, newy = x.copy(), y.copy()
 
 newx[1:-1], newy[1:-1] = alldists[1:-1] * np.cos(
     newangles), alldists[1:-1] * np.sin(newangles)
+
 
 
 # In[11]:
@@ -160,14 +202,18 @@ y2, z2
 
 # In[14]:
 
-
+index=-1
 with open(inputfile, 'r')  as fin:
     with open(outputfile, 'w')  as fout:
-        for index, line in enumerate(fin):
-#             print(line.strip())
-            line2 = line[:4] + "  {:5d}".format(index+1) + line[11:30]
-            line2 += "{:8.2f}".format(x[index]) + "{:8.2f}".format(y2[index]) + "{:8.2f}".format(z2[index]) + line[54:]
-            
-#             print(line2.strip())
-            fout.writelines(line2)
+        for i, line in enumerate(fin):
+            if "ATOM" in line:
+                index+=1
+                #print(line.strip())
+                line2 = line[:4] + "  {:5d}".format(index+1) + line[11:30]
+                line2 += "{:8.2f}".format(x[index]) + "{:8.2f}".format(y2[index]) + "{:8.2f}".format(z2[index]) + line[54:]
+                
+    #             print(line2.strip())
+                fout.writelines(line2)
+            else:
+                fout.writelines(line)
 
